@@ -1,0 +1,27 @@
+# Put this file in YOUR FORK of iptv-org/epg at .github/workflows/epg.yml
+# It builds guide.xml every 6 hours and publishes it on GitHub Pages.
+# Needs a channels.xml in the repo root (see README step 6).
+name: EPG
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  grab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: mkdir -p public
+      - run: npm run grab --- --channels=channels.xml --days=2 --maxConnections=10 --output=public/guide.xml
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - uses: actions/deploy-pages@v4
